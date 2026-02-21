@@ -1,0 +1,60 @@
+{% extends 'admin/base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 style="font-family:'Playfair Display',serif;" class="mb-0">Dashboard</h2>
+        <p class="text-muted small mb-0">Welcome, {{ session.name }}! Here's your overview.</p>
+    </div>
+    <span class="text-muted small" id="current-date"></span>
+</div>
+
+<div class="row g-3 mb-4">
+    {% for label, val, icon, color, link in [
+        ('Destinations', stats.destinations, 'bi-geo-alt-fill', '#16c79a', url_for('admin_destinations')),
+        ('Packages', stats.packages, 'bi-box-seam-fill', '#0ea5e9', url_for('admin_packages')),
+        ('Total Bookings', stats.bookings, 'bi-journal-check', '#8b5cf6', url_for('admin_bookings')),
+        ('Registered Users', stats.users, 'bi-people-fill', '#f59e0b', url_for('admin_users')),
+        ('Revenue', '₹' ~ '{:,}'.format(stats.revenue|int), 'bi-currency-rupee', '#ec4899', url_for('admin_bookings')),
+        ('Most Booked', top_dest.place_name ~ ' (' ~ top_dest.cnt ~ ')' if top_dest else 'N/A', 'bi-star-fill', '#f97316', url_for('admin_destinations')),
+    ] %}
+    <div class="col-sm-6 col-xl-4">
+        <a href="{{ link }}" class="text-decoration-none">
+            <div class="stat-card d-flex align-items-center gap-3" style="border-left-color:{{ color }};">
+                <div style="width:46px;height:46px;background:{{ color }}1a;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="bi {{ icon }}" style="color:{{ color }};font-size:1.3rem;"></i>
+                </div>
+                <div>
+                    <div class="stat-value" style="color:{{ color }};font-size:1.6rem;">{{ val }}</div>
+                    <div class="stat-label">{{ label }}</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="booking-table">
+    <div class="d-flex justify-content-between align-items-center p-3" style="border-bottom:1px solid #f1f5f9;">
+        <h6 class="mb-0 fw-bold">Recent Bookings</h6>
+        <a href="{{ url_for('admin_bookings') }}" class="btn btn-sm btn-outline-accent">View All</a>
+    </div>
+    <table class="table mb-0">
+        <thead><tr><th>#ID</th><th>Traveler</th><th>Destination</th><th>Package</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+            {% for b in recent %}
+            <tr>
+                <td class="text-muted small">#{{ b.id }}</td>
+                <td class="small fw-bold">{{ b.user_name }}</td>
+                <td class="small">{{ b.place_name }}</td>
+                <td class="small text-muted">{{ b.package_name }}</td>
+                <td class="small">{{ b.booking_date }}</td>
+                <td class="small fw-bold text-success">₹{{ '{:,}'.format(b.total_amount|int) }}</td>
+                <td><span class="status-badge status-{{ b.status }}">{{ b.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});</script>
+{% endblock %}

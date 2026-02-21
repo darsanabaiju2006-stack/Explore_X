@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Destinations{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <div class="hero-badge">God's Own Country</div>
+                <h1 class="hero-title">Discover the Magic<br><em class="text-accent">of Every Journey</em></h1>
+                <p class="hero-subtitle mb-4">Explore Kerala, Goa, and beyond. Curated travel packages for every dream and every budget.</p>
+                <form method="GET" action="{{ url_for('index') }}" class="search-wrap" style="max-width:550px;">
+                    <i class="bi bi-search text-muted"></i>
+                    <input type="text" name="search" placeholder="Search destination (e.g. Munnar, Goa...)" value="{{ search }}">
+                    {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+                    <button type="submit" class="btn btn-accent px-4">Search</button>
+                </form>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="d-flex gap-3 justify-content-end flex-wrap">
+                    {% for icon, val, label in [('bi-geo-alt', destinations|length, 'Destinations'), ('bi-box-seam', '17', 'Packages'), ('bi-people', '2', 'Travelers')] %}
+                    <div class="text-center p-3" style="background:rgba(255,255,255,0.05);border-radius:12px;min-width:100px;">
+                        <i class="bi {{ icon }} text-accent d-block mb-1" style="font-size:1.4rem;"></i>
+                        <div class="fw-bold text-white fs-4">{{ val }}+</div>
+                        <div class="text-muted small">{{ label }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FILTERS -->
+<div class="bg-white border-bottom py-3 sticky-top" style="top:62px;z-index:90;">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="text-muted small fw-bold me-1">Filter:</span>
+            <a href="{{ url_for('index') }}{% if search %}?search={{ search }}{% endif %}"
+               class="filter-pill {% if not category %}active{% endif %}">All</a>
+            {% for cat in categories %}
+            <a href="{{ url_for('index') }}?category={{ cat['category'] }}{% if search %}&search={{ search }}{% endif %}"
+               class="filter-pill {% if category == cat['category'] %}active{% endif %}">{{ cat['category'] }}</a>
+            {% endfor %}
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <form method="GET" class="d-flex align-items-center gap-2">
+                    {% if search %}<input type="hidden" name="search" value="{{ search }}">{% endif %}
+                    {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+                    <label class="text-muted small mb-0 fw-bold">Max Budget:</label>
+                    <input type="range" id="budgetSlider" name="budget" min="0" max="20000" step="500"
+                           value="{{ budget or 20000 }}" style="width:100px;" class="form-range">
+                    <span id="budgetDisplay" class="text-accent small fw-bold" style="min-width:75px;">
+                        ₹{{ '{:,}'.format(budget or 20000) }}
+                    </span>
+                    <button type="submit" class="btn btn-sm btn-outline-accent">Apply</button>
+                    {% if budget %}<a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary">Clear</a>{% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DESTINATIONS GRID -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title mb-0">
+                {{ category or ('"' ~ search ~ '"' if search else 'All Destinations') }}
+                <span class="fs-6 text-muted fw-normal ms-2">({{ destinations|length }} found)</span>
+            </h2>
+        </div>
+
+        {% if not destinations %}
+        <div class="empty-state">
+            <i class="bi bi-search"></i>
+            <h5>No destinations found</h5>
+            <p>Try a different search or remove filters.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-accent mt-2">View All</a>
+        </div>
+        {% else %}
+        <div class="row g-4">
+            {% for d in destinations %}
+            <div class="col-sm-6 col-lg-4">
+                <a href="{{ url_for('packages', dest_id=d.id) }}" class="dest-card">
+                    <div class="dest-img-wrap">
+                        <img src="{{ d.image }}" alt="{{ d.place_name }}"
+                             onerror="this.src='https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600'">
+                        <span class="dest-category">{{ d.category }}</span>
+                    </div>
+                    <div class="dest-card-body">
+                        <div class="dest-card-title">{{ d.place_name }}</div>
+                        <p class="dest-card-desc">{{ d.description }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="dest-pkg-count"><i class="bi bi-box-seam me-1"></i>{{ d.pkg_count }} packages</span>
+                            <span class="dest-from-price">
+                                {% if d.min_price %}From ₹{{ '{:,}'.format(d.min_price|int) }} →{% else %}View packages →{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

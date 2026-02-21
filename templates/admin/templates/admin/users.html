@@ -1,0 +1,36 @@
+{% extends 'admin/base.html' %}
+{% block title %}Users{% endblock %}
+{% block admin_content %}
+<h2 style="font-family:'Playfair Display',serif;" class="mb-4"><i class="bi bi-people me-2 text-accent"></i>Users</h2>
+<div class="booking-table">
+    <table class="table mb-0">
+        <thead><tr><th>#ID</th><th>Name</th><th>Email</th><th>Role</th><th>Bookings</th><th>Total Spent</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td class="text-muted small">#{{ u.id }}</td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:32px;height:32px;background:{{ '#f59e0b' if u.role=='admin' else '#16c79a' }};border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.8rem;flex-shrink:0;">{{ u.name[0].upper() }}</div>
+                        <span class="small fw-bold">{{ u.name }}</span>
+                    </div>
+                </td>
+                <td class="small">{{ u.email }}</td>
+                <td><span class="badge {{ 'bg-warning text-dark' if u.role=='admin' else 'bg-light text-dark' }}">{{ u.role|capitalize }}</span></td>
+                <td class="small text-center">{{ u.booking_count }}</td>
+                <td class="small text-success fw-bold">₹{{ '{:,}'.format(u.total_spent|int) }}</td>
+                <td class="small text-muted">{{ u.created_at[:10] }}</td>
+                <td>
+                    {% if u.role != 'admin' %}
+                    <form method="POST">
+                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger confirm-delete"><i class="bi bi-trash"></i></button>
+                    </form>
+                    {% else %}<span class="text-muted small">—</span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

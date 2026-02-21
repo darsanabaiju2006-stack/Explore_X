@@ -1,0 +1,55 @@
+{% extends 'admin/base.html' %}
+{% block title %}Manage Bookings{% endblock %}
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 style="font-family:'Playfair Display',serif;" class="mb-0"><i class="bi bi-journal-check me-2 text-accent"></i>Bookings</h2>
+    <span class="text-muted small">Confirmed Revenue: <strong class="text-success">₹{{ '{:,}'.format(revenue|int) }}</strong></span>
+</div>
+
+<form method="GET" class="d-flex gap-2 mb-4">
+    <select name="status" class="form-select" style="max-width:160px;">
+        <option value="">All Status</option>
+        {% for s in ['Confirmed','Pending','Cancelled'] %}<option {% if filter_status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-outline-accent">Filter</button>
+    {% if filter_status %}<a href="{{ url_for('admin_bookings') }}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+</form>
+
+<div class="booking-table">
+    <table class="table mb-0">
+        <thead><tr><th>#ID</th><th>Traveler</th><th>Destination</th><th>Date</th><th>People</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% if not bookings %}
+            <tr><td colspan="8" class="text-center text-muted py-4">No bookings found.</td></tr>
+            {% endif %}
+            {% for b in bookings %}
+            <tr>
+                <td class="text-muted small">#{{ b.id }}</td>
+                <td><div class="small fw-bold">{{ b.user_name }}</div><div class="text-muted" style="font-size:0.72rem;">{{ b.user_email }}</div></td>
+                <td><div class="small fw-bold">{{ b.place_name }}</div><div class="text-muted" style="font-size:0.72rem;">{{ b.package_name }}</div></td>
+                <td class="small">{{ b.booking_date }}</td>
+                <td class="small text-center">{{ b.number_of_people }}</td>
+                <td class="small fw-bold text-success">₹{{ '{:,}'.format(b.total_amount|int) }}</td>
+                <td><span class="status-badge status-{{ b.status }}">{{ b.status }}</span></td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="action" value="status">
+                            <input type="hidden" name="booking_id" value="{{ b.id }}">
+                            <select name="status" class="form-select form-select-sm" style="width:110px;" onchange="this.form.submit()">
+                                {% for s in ['Confirmed','Pending','Cancelled'] %}<option {% if b.status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+                            </select>
+                        </form>
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="booking_id" value="{{ b.id }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger confirm-delete"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
